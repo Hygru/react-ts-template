@@ -1,14 +1,21 @@
+/* eslint-disable indent */
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const WebpackBar = require('webpackbar')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+// const HardSourceWebpackPlugin = require('hard-source-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const TerserWebpackPlugin = require('terser-webpack-plugin')
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 const isDev = process.env.NODE_ENV === 'development'
 
 const getCssLoaders = (importLoaders) => [
-    'style-loader',
+    isDev ? 'style-loader' : MiniCssExtractPlugin.loader, // 生产环境需要把css样式抽离到单独的css文件中
     {
         loader: 'css-loader',
         options: {
-            modules: false, // 默认就是 false, 若要开启，可在官网具体查看可配置项
+            modules: true, // 默认就是 false, 若要开启，可在官网具体查看可配置项
             sourceMap: isDev, // 开启后与 devtool 设置一致, 开发环境开启，生产环境关闭
             importLoaders // 指定在 CSS loader 处理前使用的 laoder 数量
         }
@@ -113,10 +120,44 @@ module.exports = {
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'] // 自动判断后缀名，引入时可以不用带后缀名
     },
+    optimization: {
+        minimize: !isDev,
+        minimizer: [
+            !isDev &&
+                new TerserWebpackPlugin({
+                    extractComments: false,
+                    terserOptions: {
+                        compress: { pure_funcs: ['console.log'] }
+                    }
+                }),
+            !isDev && new OptimizeCssAssetsPlugin()
+        ].filter(Boolean)
+    },
     plugins: [
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, '../public/index.html'),
-            filename: 'index.html'
-        })
+            filename: 'index.html',
+            cache: false
+        }),
+        new WebpackBar({
+            name: '🌈 Happy build .....',
+            color: '#53eaff'
+        }),
+        new ForkTsCheckerWebpackPlugin({
+            typescript: {
+                configFile: path.resolve(__dirname, '../tsconfig.json')
+            }
+        }),
+        // new HardSourceWebpackPlugin(),
+        // new HardSourceWebpackPlugin.ExcludeModulePlugin([]), // webpack 5+ 需要加上这个配置
+        ...(!isDev
+            ? [
+                  new MiniCssExtractPlugin({
+                      filename: 'css/[name].[contenthash:8].css',
+                      chunkFilename: 'css/[name].[contenthash:8].css',
+                      ignoreOrder: false
+                  })
+              ]
+            : [])
     ]
 }

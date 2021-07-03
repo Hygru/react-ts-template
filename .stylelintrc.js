@@ -6,7 +6,13 @@ module.exports = {
         'function-name-case': 'lower',
         'no-descending-specificity': null,
         'no-invalid-double-slash-comments': null,
-        'rule-empty-line-before': 'always'
+        'rule-empty-line-before': 'always',
+        indentation: [
+            4,
+            {
+                severity: 'warning'
+            }
+        ]
     },
     ignoreFiles: ['node_modules/**/*', 'build/**/*']
 }

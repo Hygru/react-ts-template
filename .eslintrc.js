@@ -42,6 +42,7 @@ module.exports = {
         indent: [1, 4],
         'react/jsx-indent': [1, 4],
         'comma-dangle': ['error', 'never'],
-        'global-require': 'off'
+        'global-require': 'off',
+        'operator-linebreak': 'off'
     }
 }
